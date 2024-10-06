@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import warnings
+import scipy.stats as stats
 
 from sklearn.utils import shuffle
 from sklearn.preprocessing import StandardScaler
@@ -16,6 +17,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
+from scipy.stats import mannwhitneyu
 
 rlm_mae = []
 rlm_mse = []
@@ -788,8 +790,56 @@ with open('resultados_gb.txt', 'a') as file:
     file.write(f"Média MSE: {mse_media_gb:.2f}\n")
     file.write(f"Média RMSE: {rmse_media_gb:.2f}\n")
 
-    
+# Abrindo o arquivo para gravação
+with open('stats.txt', 'w') as f:
 
-    
+    # ========================== KRUSKAL-WALLIS ====================================
 
+    # Realizando o teste Kruskal-Wallis
+    stat, p_value = stats.kruskal(rlm_rmse, knr_rmse, svr_rmse, mlp_rmse, rf_rmse, gb_rmse)
+
+    # Gravando os resultados no arquivo
+    f.write(f'Estatística de Kruskal-Wallis: {stat}\n')
+    f.write(f'Valor-p: {p_value}\n')
+
+    alpha = 0.05
+    if p_value < alpha:
+        f.write("Há diferença estatisticamente significativa entre os classificadores.\n")
+    else:
+        f.write("Não há diferença estatisticamente significativa entre os classificadores.\n")
+
+    f.write('\n# ========================== KRUSKAL-WALLIS ====================================\n\n')
+
+    # ========================== MANN-WHITNEY =====================================================
+
+    # Definindo os valores RMSE de cada modelo
+    rmse_values = {
+        'RLM': rlm_rmse,
+        'KNR': knr_rmse,
+        'SVR': svr_rmse,
+        'MLP': mlp_rmse,
+        'RF': rf_rmse,
+        'GB': gb_rmse
+    }
+
+    modelos = list(rmse_values.keys())
+
+    # Realizando o teste de Mann-Whitney para cada par de classificadores
+    for i in range(len(modelos)):
+        for j in range(i + 1, len(modelos)):
+            model1 = modelos[i]
+            model2 = modelos[j]
+            stat, p_value = mannwhitneyu(rmse_values[model1], rmse_values[model2])
+
+            # Gravando os resultados no arquivo
+            f.write(f'Teste de Mann-Whitney: {model1} vs {model2}\n')
+            f.write(f'Estatística: {stat}, Valor-p: {p_value}\n')
+
+            if p_value < alpha:
+                f.write(f'Diferença estatisticamente significativa entre {model1} e {model2}.\n')
+            else:
+                f.write(f'Não há diferença estatisticamente significativa entre {model1} e {model2}.\n')
+
+            f.write('---------------------------------------------------\n')
     
+#========================== AVALIAÇÃO DOS MODELOS ====================================
