@@ -558,6 +558,7 @@ for k in range(20):
     execution_time = end_time - start_time
     print("Melhores Parâmetros: ", best_params)
     print("Melhor RMSE no conjunto de validação: ", best_rmse)
+    print(f"Execution time: {execution_time:.6f} seconds")
 
     RF_BEST = RandomForestRegressor(n_estimators=best_params['n_estimators'], criterion = best_params['criterion'], max_depth = best_params['max_depth'], min_samples_split = best_params['min_samples_split'], min_samples_leaf = best_params['min_samples_leaf'])                       
         
@@ -821,7 +822,8 @@ with open('stats.txt', 'w') as f:
     # ========================== KRUSKAL-WALLIS ====================================
 
     # Realizando o teste Kruskal-Wallis
-    stat, p_value = stats.kruskal(rlm_rmse, knr_rmse, svr_rmse, mlp_rmse, rf_rmse, gb_rmse)
+    rmse = [rlm_rmse, knr_rmse, svr_rmse, mlp_rmse, rf_rmse, gb_rmse]
+    stat, p_value = stats.kruskal(rmse)
 
     # Gravando os resultados no arquivo
     f.write(f'Estatística de Kruskal-Wallis: {stat}\n')
