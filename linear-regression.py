@@ -18,6 +18,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from scipy.stats import mannwhitneyu
+import time
 
 rlm_mae = []
 rlm_mse = []
@@ -45,10 +46,9 @@ gb_rmse = []
 
 
 
-for k in range(1,3):
-
+data = pd.read_csv('Wine/winequality-red.csv')
+for k in range(20):
     #=========================== DATA ============================================
-    data = pd.read_csv('Wine/winequality-red.csv')
     data = shuffle(data)
 
     x = data.iloc[:, 0:11]
@@ -168,6 +168,7 @@ for k in range(1,3):
     best_rmse = float('inf')
     best_params = {}
 
+    start_time = time.time()
     for n_neighbors in param_grid_knr['n_neighbors']:
         for metric in param_grid_knr['metric']:  
             knr = KNeighborsRegressor(n_neighbors=n_neighbors, metric=metric)
@@ -181,8 +182,12 @@ for k in range(1,3):
                 best_rmse = rmse_val
                 best_params = {'n_neighbors': n_neighbors, 'metric': metric}  
 
+    end_time = time.time()
+
+    execution_time = end_time - start_time
     print("Melhores Parâmetros: ", best_params)
     print("Melhor RMSE no conjunto de validação: ", best_rmse)
+    print(f"Execution time: {execution_time:.6f} seconds")
 
     #========================== KNR - GRID SEARCH ==============================================
 
@@ -210,6 +215,7 @@ for k in range(1,3):
         file.write(f"MAE para KNR: {mae_test:.2f}\n")
         file.write(f"MSE para KNR: {mse_test:.2f}\n")
         file.write(f"RMSE para KNR: {rmse_test:.2f}\n")
+        file.write(f"Execution time: {execution_time:.6f} seconds")
         file.write("\n")
 
     # Calculando as médias após todas as execuções
@@ -279,6 +285,7 @@ for k in range(1,3):
     best_rmse = float('inf')
     best_params = {}
 
+    start_time = time.time()
     for C in param_grid_svr['C']:
         for kernel in param_grid_svr['kernel']:
             svr = SVR(C=C, kernel=kernel)
@@ -290,9 +297,12 @@ for k in range(1,3):
             if rmse_val < best_rmse:  
                 best_rmse = rmse_val
                 best_params = {'C': C, 'kernel': kernel}
+    end_time = time.time()
+    execution_time = end_time - start_time
 
     print("Melhores Parâmetros: ", best_params)
     print("Melhor RMSE no conjunto de validação: ", best_rmse)
+    print(f"Execution time: {execution_time:.6f} seconds")
 
     #========================== SVR - GRID SEARCH ==============================================
 
@@ -320,6 +330,7 @@ for k in range(1,3):
         file.write(f"MAE para SVR: {mae_test:.2f}\n")
         file.write(f"MSE para SVR: {mse_test:.2f}\n")
         file.write(f"RMSE para SVR: {rmse_test:.2f}\n")
+        file.write(f"Execution time: {execution_time:.6f} seconds")
         file.write("\n")
 
     # Calculando as médias após todas as execuções
@@ -381,7 +392,7 @@ for k in range(1,3):
     #=========================== MLP - GRID SEARCH ===========================================================
 
     param_grid_mlp = {
-        'hidden_layer_sizes': [(50,), (100,), (100, 50)],
+        'hidden_layer_sizes': [[6, 6], [6, 11], [11, 6], [11, 11], [6, 6, 6], [6, 6, 11], [6, 11, 6], [6, 11, 11], [11, 6, 6], [11, 6, 11], [11, 11, 6], [11, 11, 11]],
         'activation': ['relu', 'tanh', 'logistic'],
         'max_iter': [200, 300],
         'learning_rate_init': [0.001, 0.01]
@@ -390,6 +401,7 @@ for k in range(1,3):
     best_rmse = float('inf')
     best_params = {}
 
+    start_time = time.time()
     for hidden_layer_sizes in param_grid_mlp['hidden_layer_sizes']:
         for activation in param_grid_mlp['activation']:
             for max_iter in param_grid_mlp['max_iter']:
@@ -411,8 +423,11 @@ for k in range(1,3):
                                     'max_iter': max_iter, 
                                     'learning_rate_init': learning_rate}
 
+    end_time = time.time()
+    execution_time = end_time - start_time
     print("Melhores Parâmetros: ", best_params)
     print("Melhor RMSE no conjunto de validação: ", best_rmse)
+    print(f"Execution time: {execution_time:.6f} seconds")
 
     MLP_best = MLPRegressor(hidden_layer_sizes=best_params['hidden_layer_sizes'],
                             activation=best_params['activation'], 
@@ -444,6 +459,7 @@ for k in range(1,3):
         file.write(f"MAE para MLP: {mae_test:.2f}\n")
         file.write(f"MSE para MLP: {mse_test:.2f}\n")
         file.write(f"RMSE para MLP: {rmse_test:.2f}\n")
+        file.write(f"Execution time: {execution_time:.6f} seconds")
         file.write("\n")
 
     # Calculando as médias após todas as execuções
@@ -514,6 +530,7 @@ for k in range(1,3):
     best_rmse = float('inf')
     best_params = {}
 
+    start_time = time.time()
     for n_estimators in param_grind_rf['n_estimators']:
         for criterion in param_grind_rf['criterion']:
             for max_depth in param_grind_rf['max_depth']:
@@ -537,6 +554,8 @@ for k in range(1,3):
                                         'min_samples_split': min_samples_split, 
                                         'min_samples_leaf': min_samples_leaf}
 
+    end_time = time.time()
+    execution_time = end_time - start_time
     print("Melhores Parâmetros: ", best_params)
     print("Melhor RMSE no conjunto de validação: ", best_rmse)
 
@@ -567,6 +586,7 @@ for k in range(1,3):
         file.write(f"MAE para RF: {mae_test:.2f}\n")
         file.write(f"MSE para RF: {mse_test:.2f}\n")
         file.write(f"RMSE para RF: {rmse_test:.2f}\n")
+        file.write(f"Execution time: {execution_time:.6f} seconds")
         file.write("\n")
 
     # Calculando as médias após todas as execuções
@@ -627,17 +647,18 @@ for k in range(1,3):
     # ========================= GB - GRID SEARCH ===========================================================
 
     param_grind_gb = {
-        'n_estimators': [100], # [100, 200, 300]
-        'loss': ['absolute_error', 'huber', 'quantile'], # ['ls', 'lad', 'huber', 'quantile']
-        'max_depth': [3], # [3, 5, 7]
-        'learning_rate': [0.1], # [0.1, 0.01, 0.001]
-        'min_samples_split': [2], # [2, 5, 10]
-        'min_samples_leaf': [1] # [1, 2, 4]
+        'n_estimators': [100, 200, 300],
+        'loss': ['absolute_error', 'huber', 'quantile'],
+        'max_depth': [3, 5, 7],
+        'learning_rate': [0.1, 0.01, 0.001],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4],
     }
 
     best_rmse = float('inf')
     best_params = {}
 
+    start_time = time.time()
     for n_estimators in param_grind_gb['n_estimators']:
         for loss in param_grind_gb['loss']:
             for learning_rate in param_grind_gb['learning_rate']:
@@ -664,14 +685,17 @@ for k in range(1,3):
                                             'min_samples_split': min_samples_split, 
                                             'min_samples_leaf': min_samples_leaf}
 
+    end_time = time.time()
+    execution_time = end_time - start_time
     print("Melhores Parâmetros: ", best_params)
     print("Melhor RMSE no conjunto de validação: ", best_rmse)
+    print(f"Execution time: {execution_time:.6f} seconds")
 
-    GB_BEST = GradientBoostingRegressor(n_estimators=best_params['n_estimators'], 
-                                        loss = best_params['loss'], 
-                                        learning_rate = best_params['learning_rate'], 
-                                        max_depth = best_params['max_depth'], 
-                                        min_samples_split = best_params['min_samples_split'], 
+    GB_BEST = GradientBoostingRegressor(n_estimators= best_params['n_estimators'],
+                                        loss = best_params['loss'],
+                                        learning_rate = best_params['learning_rate'],
+                                        max_depth = best_params['max_depth'],
+                                        min_samples_split = best_params['min_samples_split'],
                                         min_samples_leaf = best_params['min_samples_leaf'])
 
     # ========================= GB - GRID SEARCH ===========================================================
@@ -699,6 +723,7 @@ for k in range(1,3):
         file.write(f"MAE para GB: {mae_test:.2f}\n")
         file.write(f"MSE para GB: {mse_test:.2f}\n")
         file.write(f"RMSE para GB: {rmse_test:.2f}\n")
+        file.write(f"Execution time: {execution_time:.6f} seconds")
         file.write("\n")
 
     # Calculando as médias após todas as execuções
